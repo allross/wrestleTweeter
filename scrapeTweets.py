@@ -4,14 +4,35 @@ import unicodedata
 from twitter_scraper import get_tweets
 
 # List of wrestling twitter accounts to scrape from.
-users = ['mikethemiz', 'hulkhogan', 'joeyryanonline', 'SussexCoChicken', 'FrightmareLucha', 'thekingnickgage',
+users = ['hulkhogan', 'joeyryanonline', 'SussexCoChicken', 'FrightmareLucha', 'thekingnickgage',
          'lastrealmanROH', 'KennyOmegamanX', 'RealDarioCueto',
          'JayWhiteNZ', 'MmmGorgeous', 'SamiZayn', 'the_ironsheik', 'BaronCorbinWWE', 'SamoaJoe', 'TherealRVD',
          'MattJackson13', 'trentylocks', 'facdaniels', 'SexyChuckieT',
-         'SiNNbODHi', 'JimmyJacobsX', 'ricflairnatrboy', 'niajaxxwwe', 'wwerollins']
+         'SiNNbODHi', 'JimmyJacobsX', 'ricflairnatrboy', 'niajaxxwwe', 'wwerollins', 'markostunt', 'wressocietyx',
+         'njpwglobal', 'reyfenixmx', 'pentagonjunior', 'go2sleepyhollow', 'dragoaaa', 'cheeseburgerroh',
+         'mmmgorgeous', 'samizayn', 'ivar_wwe', 'gentlemanjervis', 'mrgmsi_bcage', 'petedunneyxb',
+         'scottdawsonwwe', 'realjeffcobb', 'codyrhodes', 'tlee910', 'thebobbyfish', 'officialpwg',
+         'janelababy', 'thedaltoncastle', 'korcombat', 'futuremeltzer', 'brethart', 'lukeharperwwe', 'therealec3',
+         'wwedramaking', 'mdoggmattcross', 'scottsteiner','randyorton', 'lufisto', 'jimmyhavoc', 'adamcolepro',
+         'jigsawwrestling', 'erickrowan', 'gentlemanjackg', 'gogoach', 'speedballbailey', 'kikutarosan', 'superkingofbros',
+         'realbulljames', 'nickjacksonyb', 'kaijubigbattel', 'maffewgregg', 'matthardybrand', 'willie_mack', 'eviluno',
+         'combatzone', 'ultramantis']
 
-badLinks = ["https://twitter.com", ]
+
+# TODO: ignore tweets containing these words
+blackListedWords = []
 tweets = []
+
+
+# Scrape tweets from the wrestlers list above
+def scrape_Tweets():
+    for user in users:
+        try:
+            for tweet in get_tweets(user, pages=3):
+                tweets.append(tweet['text'])
+        except:
+            pass
+    return tweets
 
 
 # Put tweets delineated by newline into a text file tweets.txt
@@ -33,9 +54,10 @@ def clean_Tweets(tweets):
     for tweet in tweets:
         text = re.sub(r"(?:\@|https?\://)\S+", "", tweet)  # remove URLS from tweets
         text = text.replace("\xa0…", "")
-        text = unicodedata.normalize("NFKD", tweet)  # Remove ugly Unicode characters, not sure if works yet
-        # add a space before pic.twitter so the picture will load in the tweet
-        text = text.replace("pic.twitter", " pic.twitter")
+        text = unicodedata.normalize("NFKD", text)  # Remove ugly Unicode characters, not sure if works yet
+        text = re.sub(r"(?:\@|s?\://)\S+", "", text)  # remove URLS from tweets
+        text = ' '.join(word for word in text.split(' ') if not word.startswith('pic.twitter'))  # Remove pic.twitter URLS
+        text = ' '.join(word for word in text.split(' ') if not ("pic.twitter" in word))  # Remove pic.twitter URLS
         newTweets.append(text)
     return newTweets
 
@@ -61,29 +83,6 @@ def removePics(tweets):
         newTweets.append(tweet)
     return newTweets
 
-
-# todo: remove all pic.twitter from tweets and store in a separate list to randomly append to the end of a tweet its funnier that way
-# todo: maybe sentiment analysis to only choose funny neg/pos tweets?
-
-# Scrape tweets from the wrestlers list above
-def scrape_Tweets():
-    for user in users:
-        try:
-            for tweet in get_tweets(user, pages=1):
-                tweets.append(tweet['text'])
-        except:
-            pass
-    return tweets
-
-
-# do nothing, just skip them
-
-
 tweetList = scrape_Tweets()
 tweetList = clean_Tweets(tweetList)
-# pics = getPics(tweeeets)
-# print(pics)
-# outpics(pics)
-# tweeeets = removePics(tweeeets)
-# print(tweeeets)
 output_Tweets(tweetList)
